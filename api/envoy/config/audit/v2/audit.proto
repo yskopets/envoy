@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package envoy.config.audit.v2;
+
+option java_outer_classname = "AuditLogProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.audit.v2";
+option go_package = "v2";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+
+// Audit configuration.
+message AuditConfig {
+
+  // Optional list of Audit Logs to maintain.
+  repeated AuditLog audit_logs = 1;
+}
+
+// Configuration for an Audit Log.
+message AuditLog {
+
+  // Selector of xDS resources.
+  message ResourceSelector {
+
+    // Type of the resource to audit, e.g.
+    // "type.googleapis.com/envoy.api.v2.Listener".
+    string type_url = 1 [(validate.rules).string.min_bytes = 1];
+
+    // NOTE: in future, it might be extended with a list of `resource_names`
+  }
+
+  // List of xDS resources to audit.
+  repeated ResourceSelector resources = 1 [(validate.rules).repeated.min_items = 1];
+
+  // List of sinks to write Audit records to.
+  repeated AuditSink sinks = 2 [(validate.rules).repeated.min_items = 1];
+}
+
+// Configuration for pluggable Audit sinks.
+message AuditSink {
+  // The name of the Audit sink to instantiate. The name must match a supported
+  // Audit sink. The built-in Audit sinks are:
+  //
+  // * :ref:`envoy.audit_sinks.file <envoy_api_msg_config.audit.v2.AuditLogFile>`
+  // * :ref:`envoy.audit_sinks.audit_log_service <envoy_api_msg_config.audit.v2.AuditLogService>`
+  string name = 1 [(validate.rules).string.min_bytes = 1];
+
+  // Audit sink specific configuration. See
+  // :ref:`AuditLogFile <envoy_api_msg_config.audit.v2.AuditLogFile>` for an example.
+  oneof config_type {
+    google.protobuf.Struct config = 2;
+
+    google.protobuf.Any typed_config = 3;
+  }
+}

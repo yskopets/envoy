@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package envoy.config.audit.v2;
+
+option java_outer_classname = "AuditLogServiceProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.audit.v2";
+option go_package = "v2";
+
+import "envoy/api/v2/core/grpc_service.proto";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: Audit Log Service sink]
+
+// Configuration for the built-in *envoy.audit_sinks.audit_log_service*
+// :ref:`Audit Sink <envoy_api_msg_config.audit.v2.AuditSink>`
+// that streams log records to a gRPC service.
+message AuditLogService {
+  // The friendly name of the audit log to be returned in :ref:`StreamAuditLogsMessage.Identifier
+  // <envoy_api_msg_service.audit.v2.StreamAuditLogsMessage.Identifier>`. This allows the
+  // audit log server to differentiate between different audit logs coming from the same Envoy.
+  string log_name = 1 [(validate.rules).string.min_bytes = 1];
+
+  // The gRPC service for the Audit Log Service.
+  envoy.api.v2.core.GrpcService grpc_service = 2 [(validate.rules).message.required = true];
+}
