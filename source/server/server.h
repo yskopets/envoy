@@ -17,6 +17,7 @@
 #include "envoy/tracing/http_tracer.h"
 
 #include "common/access_log/access_log_manager_impl.h"
+#include "common/audit/audit_manager_impl.h"
 #include "common/common/assert.h"
 #include "common/common/logger_delegates.h"
 #include "common/grpc/async_client_manager_impl.h"
@@ -165,6 +166,7 @@ public:
   void drainListeners() override;
   DrainManager& drainManager() override { return *drain_manager_; }
   AccessLog::AccessLogManager& accessLogManager() override { return access_log_manager_; }
+  Audit::AuditManager& auditManager() override { return audit_manager_; }
   void failHealthcheck(bool fail) override;
   HotRestart& hotRestart() override { return restarter_; }
   Init::Manager& initManager() override { return init_manager_; }
@@ -244,6 +246,7 @@ private:
   Event::TimerPtr stat_flush_timer_;
   LocalInfo::LocalInfoPtr local_info_;
   DrainManagerPtr drain_manager_;
+  Audit::AuditManagerImpl audit_manager_;
   AccessLog::AccessLogManagerImpl access_log_manager_;
   std::unique_ptr<Upstream::ClusterManagerFactory> cluster_manager_factory_;
   std::unique_ptr<Server::GuardDog> guard_dog_;
