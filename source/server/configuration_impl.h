@@ -12,6 +12,7 @@
 #include "envoy/config/bootstrap/v2/bootstrap.pb.h"
 #include "envoy/http/filter.h"
 #include "envoy/network/filter.h"
+#include "envoy/server/audit_log_config.h"
 #include "envoy/server/configuration.h"
 #include "envoy/server/filter_config.h"
 #include "envoy/server/instance.h"
@@ -110,6 +111,8 @@ public:
   }
 
 private:
+  void initializeAuditSinks(const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
+                            Instance& server);
   /**
    * Initialize tracers and corresponding sinks.
    */

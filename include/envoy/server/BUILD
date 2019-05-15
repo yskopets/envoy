@@ -32,6 +32,16 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
+    name = "audit_log_config_interface",
+    hdrs = ["audit_log_config.h"],
+    deps = [
+        ":instance_interface",
+        "//include/envoy/audit:audit_sink_interface",
+        "//source/common/protobuf",
+    ],
+)
+
+envoy_cc_library(
     name = "configuration_interface",
     hdrs = ["configuration.h"],
     external_deps = ["abseil_optional"],
@@ -96,6 +106,7 @@ envoy_cc_library(
         ":options_interface",
         "//include/envoy/access_log:access_log_interface",
         "//include/envoy/api:api_interface",
+        "//include/envoy/audit:audit_manager_interface",
         "//include/envoy/common:mutex_tracer",
         "//include/envoy/event:timer_interface",
         "//include/envoy/http:context_interface",

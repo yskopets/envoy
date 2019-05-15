@@ -204,6 +204,8 @@ void InstanceImpl::initialize(const Options& options,
   ENVOY_LOG(info, "statically linked extensions:");
   ENVOY_LOG(info, "  access_loggers: {}",
             Registry::FactoryRegistry<Configuration::AccessLogInstanceFactory>::allFactoryNames());
+  ENVOY_LOG(info, "  audit_sinks: {}",
+            Registry::FactoryRegistry<Configuration::AuditSinkFactory>::allFactoryNames());
   ENVOY_LOG(
       info, "  filters.http: {}",
       Registry::FactoryRegistry<Configuration::NamedHttpFilterConfigFactory>::allFactoryNames());
@@ -324,7 +326,7 @@ void InstanceImpl::initialize(const Options& options,
   cluster_manager_factory_ = std::make_unique<Upstream::ProdClusterManagerFactory>(
       *admin_, Runtime::LoaderSingleton::get(), stats_store_, thread_local_, *random_generator_,
       dns_resolver_, *ssl_context_manager_, *dispatcher_, *local_info_, *secret_manager_, *api_,
-      http_context_, access_log_manager_, *singleton_manager_);
+      http_context_, access_log_manager_, *singleton_manager_, audit_manager_);
 
   // Now the configuration gets parsed. The configuration may start setting
   // thread local data per above. See MainImpl::initialize() for why ConfigImpl

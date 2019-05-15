@@ -18,6 +18,7 @@ import "envoy/api/v2/auth/cert.proto";
 import "envoy/api/v2/core/config_source.proto";
 import "envoy/api/v2/cds.proto";
 import "envoy/api/v2/lds.proto";
+import "envoy/config/audit/v2/audit.proto";
 import "envoy/config/trace/v2/trace.proto";
 import "envoy/config/metrics/v2/stats.proto";
 import "envoy/config/overload/v2alpha/overload.proto";
@@ -127,6 +128,9 @@ message Bootstrap {
   // over the wire individually because the statsd protocol doesn't have any way to represent a
   // histogram summary. Be aware that this can be a very large volume of data.
   bool enable_dispatcher_stats = 16;
+
+  // Configuration for auditing xDS updates.
+  envoy.config.audit.v2.AuditConfig audit_config = 17;
 }
 
 // Administration interface :ref:`operations documentation
