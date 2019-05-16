@@ -15,6 +15,7 @@
 #include "envoy/stats/scope.h"
 
 #include "common/common/assert.h"
+#include "common/common/cleanup.h"
 #include "common/common/enum_to_int.h"
 #include "common/common/fmt.h"
 #include "common/common/utility.h"
@@ -183,7 +184,7 @@ ClusterManagerImpl::ClusterManagerImpl(
     Stats::Store& stats, ThreadLocal::Instance& tls, Runtime::Loader& runtime,
     Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
     AccessLog::AccessLogManager& log_manager, Event::Dispatcher& main_thread_dispatcher,
-    Server::Admin& admin, Api::Api& api, Http::Context& http_context)
+    Server::Admin& admin, Api::Api& api, Http::Context& http_context, Audit::Auditor& auditor)
     : factory_(factory), runtime_(runtime), stats_(stats), tls_(tls.allocateSlot()),
       random_(random), bind_config_(bootstrap.cluster_manager().upstream_bind_config()),
       local_info_(local_info), cm_stats_(generateStats(stats)),
@@ -191,7 +192,7 @@ ClusterManagerImpl::ClusterManagerImpl(
       config_tracker_entry_(
           admin.getConfigTracker().add("clusters", [this] { return dumpClusterConfigs(); })),
       time_source_(main_thread_dispatcher.timeSource()), dispatcher_(main_thread_dispatcher),
-      http_context_(http_context) {
+      http_context_(http_context), auditor_(auditor) {
   async_client_manager_ =
       std::make_unique<Grpc::AsyncClientManagerImpl>(*this, tls, time_source_, api);
   const auto& cm_config = bootstrap.cluster_manager();
@@ -444,6 +445,9 @@ void ClusterManagerImpl::applyUpdates(const Cluster& cluster, uint32_t priority,
 bool ClusterManagerImpl::addOrUpdateCluster(const envoy::api::v2::Cluster& cluster,
                                             const std::string& version_info,
                                             ClusterWarmingCallback cluster_warming_cb) {
+  Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
+  Cleanup audit([&cluster_change, this] { auditor_.observe(cluster_change); });
+
   // First we need to see if this new config is new or an update to an existing dynamic cluster.
   // We don't allow updates to statically configured clusters in the main configuration. We check
   // both the warming clusters and the active clusters to see if we need an update or the update
@@ -512,6 +516,7 @@ bool ClusterManagerImpl::addOrUpdateCluster(const envoy::api::v2::Cluster& clust
   }
 
   updateGauges();
+  cluster_change.complete();
   return true;
 }
 
@@ -580,6 +585,9 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
 void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
                                      const std::string& version_info, bool added_via_api,
                                      ClusterMap& cluster_map) {
+  Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
+  Cleanup audit([&cluster_change, this] { auditor_.observe(cluster_change); });  
+
   ClusterSharedPtr new_cluster =
       factory_.clusterFromProto(cluster, *this, outlier_event_logger_, added_via_api);
 
@@ -628,6 +636,7 @@ void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
   }
 
   updateGauges();
+  cluster_change.complete();
 }
 
 void ClusterManagerImpl::updateGauges() {
@@ -1210,7 +1219,7 @@ ClusterManagerPtr ProdClusterManagerFactory::clusterManagerFromProto(
     const envoy::config::bootstrap::v2::Bootstrap& bootstrap) {
   return ClusterManagerPtr{
       new ClusterManagerImpl(bootstrap, *this, stats_, tls_, runtime_, random_, local_info_,
-                             log_manager_, main_thread_dispatcher_, admin_, api_, http_context_)};
+                             log_manager_, main_thread_dispatcher_, admin_, api_, http_context_, auditor_)};
 }
 
 Http::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateConnPool(
