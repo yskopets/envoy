@@ -184,7 +184,7 @@ ClusterManagerImpl::ClusterManagerImpl(
     Stats::Store& stats, ThreadLocal::Instance& tls, Runtime::Loader& runtime,
     Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
     AccessLog::AccessLogManager& log_manager, Event::Dispatcher& main_thread_dispatcher,
-    Server::Admin& admin, Api::Api& api, Http::Context& http_context, Audit::Auditor& auditor)
+    Server::Admin& admin, Api::Api& api, Http::Context& http_context)
     : factory_(factory), runtime_(runtime), stats_(stats), tls_(tls.allocateSlot()),
       random_(random), bind_config_(bootstrap.cluster_manager().upstream_bind_config()),
       local_info_(local_info), cm_stats_(generateStats(stats)),
@@ -192,7 +192,7 @@ ClusterManagerImpl::ClusterManagerImpl(
       config_tracker_entry_(
           admin.getConfigTracker().add("clusters", [this] { return dumpClusterConfigs(); })),
       time_source_(main_thread_dispatcher.timeSource()), dispatcher_(main_thread_dispatcher),
-      http_context_(http_context), auditor_(auditor) {
+      api_(api), http_context_(http_context) {
   async_client_manager_ =
       std::make_unique<Grpc::AsyncClientManagerImpl>(*this, tls, time_source_, api);
   const auto& cm_config = bootstrap.cluster_manager();
@@ -446,7 +446,7 @@ bool ClusterManagerImpl::addOrUpdateCluster(const envoy::api::v2::Cluster& clust
                                             const std::string& version_info,
                                             ClusterWarmingCallback cluster_warming_cb) {
   Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
-  Cleanup audit([&cluster_change, this] { auditor_.observe(cluster_change); });
+  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
 
   // First we need to see if this new config is new or an update to an existing dynamic cluster.
   // We don't allow updates to statically configured clusters in the main configuration. We check
@@ -586,7 +586,7 @@ void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
                                      const std::string& version_info, bool added_via_api,
                                      ClusterMap& cluster_map) {
   Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
-  Cleanup audit([&cluster_change, this] { auditor_.observe(cluster_change); });  
+  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
 
   ClusterSharedPtr new_cluster =
       factory_.clusterFromProto(cluster, *this, outlier_event_logger_, added_via_api);
@@ -1219,7 +1219,7 @@ ClusterManagerPtr ProdClusterManagerFactory::clusterManagerFromProto(
     const envoy::config::bootstrap::v2::Bootstrap& bootstrap) {
   return ClusterManagerPtr{
       new ClusterManagerImpl(bootstrap, *this, stats_, tls_, runtime_, random_, local_info_,
-                             log_manager_, main_thread_dispatcher_, admin_, api_, http_context_, auditor_)};
+                             log_manager_, main_thread_dispatcher_, admin_, api_, http_context_)};
 }
 
 Http::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateConnPool(

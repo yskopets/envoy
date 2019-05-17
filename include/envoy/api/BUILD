@@ -12,6 +12,7 @@ envoy_cc_library(
     name = "api_interface",
     hdrs = ["api.h"],
     deps = [
+        "//include/envoy/audit:auditor_interface",
         "//include/envoy/event:dispatcher_interface",
         "//include/envoy/filesystem:filesystem_interface",
         "//include/envoy/thread:thread_interface",

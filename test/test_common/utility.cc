@@ -42,6 +42,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "test/mocks/audit/mocks.h"
 #include "test/mocks/stats/mocks.h"
 #include "gtest/gtest.h"
 
@@ -392,18 +393,23 @@ class TestImplProvider {
 protected:
   Event::GlobalTimeSystem global_time_system_;
   testing::NiceMock<Stats::MockIsolatedStatsStore> default_stats_store_;
+  testing::NiceMock<Audit::MockAuditor> default_auditor_;
 };
 
 class TestImpl : public TestImplProvider, public Impl {
 public:
   TestImpl(Thread::ThreadFactory& thread_factory, Stats::Store& stats_store,
+           Event::TimeSystem& time_system, Filesystem::Instance& file_system)
+      : Impl(thread_factory, stats_store, time_system, file_system, default_auditor_) {}
+  TestImpl(Thread::ThreadFactory& thread_factory, Stats::Store& stats_store,
            Filesystem::Instance& file_system)
-      : Impl(thread_factory, stats_store, global_time_system_, file_system) {}
+      : Impl(thread_factory, stats_store, global_time_system_, file_system, default_auditor_) {}
   TestImpl(Thread::ThreadFactory& thread_factory, Event::TimeSystem& time_system,
            Filesystem::Instance& file_system)
-      : Impl(thread_factory, default_stats_store_, time_system, file_system) {}
+      : Impl(thread_factory, default_stats_store_, time_system, file_system, default_auditor_) {}
   TestImpl(Thread::ThreadFactory& thread_factory, Filesystem::Instance& file_system)
-      : Impl(thread_factory, default_stats_store_, global_time_system_, file_system) {}
+      : Impl(thread_factory, default_stats_store_, global_time_system_, file_system,
+             default_auditor_) {}
 };
 
 ApiPtr createApiForTest() {
@@ -422,8 +428,8 @@ ApiPtr createApiForTest(Event::TimeSystem& time_system) {
 }
 
 ApiPtr createApiForTest(Stats::Store& stat_store, Event::TimeSystem& time_system) {
-  return std::make_unique<Impl>(Thread::threadFactoryForTest(), stat_store, time_system,
-                                Filesystem::fileSystemForTest());
+  return std::make_unique<TestImpl>(Thread::threadFactoryForTest(), stat_store, time_system,
+                                    Filesystem::fileSystemForTest());
 }
 
 } // namespace Api

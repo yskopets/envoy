@@ -43,7 +43,8 @@ ValidationInstance::ValidationInstance(const Options& options, Event::TimeSystem
                                        Thread::ThreadFactory& thread_factory,
                                        Filesystem::Instance& file_system)
     : options_(options), stats_store_(store),
-      api_(new Api::ValidationImpl(thread_factory, store, time_system, file_system)),
+      api_(
+          new Api::ValidationImpl(thread_factory, store, time_system, file_system, audit_manager_)),
       dispatcher_(api_->allocateDispatcher()),
       singleton_manager_(new Singleton::ManagerImpl(api_->threadFactory().currentThreadId())),
       access_log_manager_(options.fileFlushIntervalMsec(), *api_, *dispatcher_, access_log_lock,
@@ -95,7 +96,7 @@ void ValidationInstance::initialize(const Options& options,
   cluster_manager_factory_ = std::make_unique<Upstream::ValidationClusterManagerFactory>(
       admin(), runtime(), stats(), threadLocal(), random(), dnsResolver(), sslContextManager(),
       dispatcher(), localInfo(), *secret_manager_, *api_, http_context_, accessLogManager(),
-      singletonManager(), time_system_, auditManager());
+      singletonManager(), time_system_);
   config_.initialize(bootstrap, *this, *cluster_manager_factory_);
   http_context_.setTracer(config_.httpTracer());
   clusterManager().setInitializedCb([this]() -> void { init_manager_.initialize(init_watcher_); });

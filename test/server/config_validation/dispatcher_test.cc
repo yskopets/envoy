@@ -9,6 +9,7 @@
 
 #include "server/config_validation/api.h"
 
+#include "test/mocks/audit/mocks.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/network_utility.h"
 #include "test/test_common/test_time.h"
@@ -24,13 +25,14 @@ public:
   ConfigValidation() {
     validation_ = std::make_unique<Api::ValidationImpl>(Thread::threadFactoryForTest(),
                                                         stats_store_, test_time_.timeSystem(),
-                                                        Filesystem::fileSystemForTest());
+                                                        Filesystem::fileSystemForTest(), auditor_);
     dispatcher_ = validation_->allocateDispatcher();
   }
 
   DangerousDeprecatedTestTime test_time_;
   Event::DispatcherPtr dispatcher_;
   Stats::IsolatedStoreImpl stats_store_;
+  testing::NiceMock<Audit::MockAuditor> auditor_;
 
 private:
   // Using config validation API.

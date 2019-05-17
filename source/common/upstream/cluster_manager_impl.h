@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "envoy/api/api.h"
-#include "envoy/audit/auditor.h"
 #include "envoy/config/bootstrap/v2/bootstrap.pb.h"
 #include "envoy/http/codes.h"
 #include "envoy/local_info/local_info.h"
@@ -43,12 +42,12 @@ public:
                             const LocalInfo::LocalInfo& local_info,
                             Secret::SecretManager& secret_manager, Api::Api& api,
                             Http::Context& http_context, AccessLog::AccessLogManager& log_manager,
-                            Singleton::Manager& singleton_manager, Audit::Auditor& auditor)
+                            Singleton::Manager& singleton_manager)
       : main_thread_dispatcher_(main_thread_dispatcher), api_(api), http_context_(http_context),
         admin_(admin), runtime_(runtime), stats_(stats), tls_(tls), random_(random),
         dns_resolver_(dns_resolver), ssl_context_manager_(ssl_context_manager),
         local_info_(local_info), secret_manager_(secret_manager), log_manager_(log_manager),
-        singleton_manager_(singleton_manager), auditor_(auditor) {}
+        singleton_manager_(singleton_manager) {}
 
   // Upstream::ClusterManagerFactory
   ClusterManagerPtr
@@ -84,7 +83,6 @@ protected:
   Secret::SecretManager& secret_manager_;
   AccessLog::AccessLogManager& log_manager_;
   Singleton::Manager& singleton_manager_;
-  Audit::Auditor& auditor_;
 };
 
 /**
@@ -172,7 +170,7 @@ public:
                      Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
                      AccessLog::AccessLogManager& log_manager,
                      Event::Dispatcher& main_thread_dispatcher, Server::Admin& admin, Api::Api& api,
-                     Http::Context& http_context, Audit::Auditor& auditor);
+                     Http::Context& http_context);
 
   // Upstream::ClusterManager
   bool addOrUpdateCluster(const envoy::api::v2::Cluster& cluster, const std::string& version_info,
@@ -466,8 +464,8 @@ private:
   TimeSource& time_source_;
   ClusterUpdatesMap updates_map_;
   Event::Dispatcher& dispatcher_;
+  Api::Api& api_;
   Http::Context& http_context_;
-  Audit::Auditor& auditor_;
 };
 
 } // namespace Upstream

@@ -414,6 +414,7 @@ envoy_cc_test_library(
         "//test/common/runtime:utility_lib",
         "//test/common/upstream:utility_lib",
         "//test/config:utility_lib",
+        "//test/mocks/audit:audit_mocks",
         "//test/mocks/buffer:buffer_mocks",
         "//test/mocks/server:server_mocks",
         "//test/mocks/stats:stats_mocks",

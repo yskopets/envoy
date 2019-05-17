@@ -1,7 +1,5 @@
 #pragma once
 
-#include "envoy/audit/auditor.h"
-
 #include "envoy/secret/secret_manager.h"
 #include "envoy/upstream/cluster_manager.h"
 
@@ -28,11 +26,11 @@ public:
       Event::Dispatcher& main_thread_dispatcher, const LocalInfo::LocalInfo& local_info,
       Secret::SecretManager& secret_manager, Api::Api& api, Http::Context& http_context,
       AccessLog::AccessLogManager& log_manager, Singleton::Manager& singleton_manager,
-      Event::TimeSystem& time_system, Audit::Auditor& auditor)
+      Event::TimeSystem& time_system)
       : ProdClusterManagerFactory(admin, runtime, stats, tls, random, dns_resolver,
                                   ssl_context_manager, main_thread_dispatcher, local_info,
                                   secret_manager, api, http_context, log_manager,
-                                  singleton_manager, auditor),
+                                  singleton_manager),
         time_system_(time_system) {}
 
   ClusterManagerPtr
@@ -58,7 +56,7 @@ public:
                            Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
                            AccessLog::AccessLogManager& log_manager, Event::Dispatcher& dispatcher,
                            Server::Admin& admin, Api::Api& api, Http::Context& http_context,
-                           Event::TimeSystem& time_system, Audit::Auditor& auditor);
+                           Event::TimeSystem& time_system);
 
   Http::ConnectionPool::Instance* httpConnPoolForCluster(const std::string&, ResourcePriority,
                                                          Http::Protocol,

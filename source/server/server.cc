@@ -58,7 +58,8 @@ InstanceImpl::InstanceImpl(const Options& options, Event::TimeSystem& time_syste
     : secret_manager_(std::make_unique<Secret::SecretManagerImpl>()), shutdown_(false),
       options_(options), time_source_(time_system), restarter_(restarter),
       start_time_(time(nullptr)), original_start_time_(start_time_), stats_store_(store),
-      thread_local_(tls), api_(new Api::Impl(thread_factory, store, time_system, file_system)),
+      thread_local_(tls),
+      api_(new Api::Impl(thread_factory, store, time_system, file_system, audit_manager_)),
       dispatcher_(api_->allocateDispatcher()),
       singleton_manager_(new Singleton::ManagerImpl(api_->threadFactory().currentThreadId())),
       handler_(new ConnectionHandlerImpl(ENVOY_LOGGER(), *dispatcher_)),
@@ -326,7 +327,7 @@ void InstanceImpl::initialize(const Options& options,
   cluster_manager_factory_ = std::make_unique<Upstream::ProdClusterManagerFactory>(
       *admin_, Runtime::LoaderSingleton::get(), stats_store_, thread_local_, *random_generator_,
       dns_resolver_, *ssl_context_manager_, *dispatcher_, *local_info_, *secret_manager_, *api_,
-      http_context_, access_log_manager_, *singleton_manager_, audit_manager_);
+      http_context_, access_log_manager_, *singleton_manager_);
 
   // Now the configuration gets parsed. The configuration may start setting
   // thread local data per above. See MainImpl::initialize() for why ConfigImpl

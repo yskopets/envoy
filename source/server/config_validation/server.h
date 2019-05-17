@@ -162,6 +162,7 @@ private:
   const Options& options_;
   Stats::IsolatedStoreImpl& stats_store_;
   ThreadLocal::InstanceImpl thread_local_;
+  Audit::AuditManagerImpl audit_manager_;
   Api::ApiPtr api_;
   Event::DispatcherPtr dispatcher_;
   Server::ValidationAdmin admin_;
@@ -172,7 +173,6 @@ private:
   Configuration::MainImpl config_;
   LocalInfo::LocalInfoPtr local_info_;
   AccessLog::AccessLogManagerImpl access_log_manager_;
-  Audit::AuditManagerImpl audit_manager_;
   std::unique_ptr<Upstream::ValidationClusterManagerFactory> cluster_manager_factory_;
   std::unique_ptr<ListenerManagerImpl> listener_manager_;
   std::unique_ptr<OverloadManager> overload_manager_;

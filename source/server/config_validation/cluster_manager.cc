@@ -9,7 +9,7 @@ ClusterManagerPtr ValidationClusterManagerFactory::clusterManagerFromProto(
     const envoy::config::bootstrap::v2::Bootstrap& bootstrap) {
   return std::make_unique<ValidationClusterManager>(
       bootstrap, *this, stats_, tls_, runtime_, random_, local_info_, log_manager_,
-      main_thread_dispatcher_, admin_, api_, http_context_, time_system_, auditor_);
+      main_thread_dispatcher_, admin_, api_, http_context_, time_system_);
 }
 
 CdsApiPtr
@@ -27,9 +27,9 @@ ValidationClusterManager::ValidationClusterManager(
     Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
     AccessLog::AccessLogManager& log_manager, Event::Dispatcher& main_thread_dispatcher,
     Server::Admin& admin, Api::Api& api, Http::Context& http_context,
-    Event::TimeSystem& time_system, Audit::Auditor& auditor)
+    Event::TimeSystem& time_system)
     : ClusterManagerImpl(bootstrap, factory, stats, tls, runtime, random, local_info, log_manager,
-                         main_thread_dispatcher, admin, api, http_context, auditor),
+                         main_thread_dispatcher, admin, api, http_context),
       async_client_(api, time_system) {}
 
 Http::ConnectionPool::Instance*
