@@ -13,5 +13,8 @@ namespace Audit {
 MockAuditor::MockAuditor() {}
 MockAuditor::~MockAuditor() {}
 
+MockAuditManager::MockAuditManager() {}
+MockAuditManager::~MockAuditManager() {}
+
 } // namespace Audit
 } // namespace Envoy

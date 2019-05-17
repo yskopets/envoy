@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
-#include "envoy/audit/auditor.h"
 #include "envoy/audit/audit_manager.h"
+#include "envoy/audit/auditor.h"
 
 #include "gmock/gmock.h"
 
@@ -18,6 +18,17 @@ public:
 
   // Audit::Auditor
   MOCK_METHOD1(observe, void(const ResourceChange& change));
+};
+
+class MockAuditManager : public AuditManager {
+public:
+  MockAuditManager();
+  ~MockAuditManager();
+
+  // Audit::Auditor
+  MOCK_METHOD1(observe, void(const ResourceChange& change));
+  // Audit::AuditManager
+  MOCK_METHOD1(addSink, void(AuditSinkPtr&& sink));
 };
 
 } // namespace Audit

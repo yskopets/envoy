@@ -13,6 +13,7 @@ envoy_cc_mock(
     srcs = ["mocks.cc"],
     hdrs = ["mocks.h"],
     deps = [
+        "//include/envoy/audit:audit_manager_interface",
         "//include/envoy/audit:auditor_interface",
     ],
 )

@@ -343,6 +343,7 @@ public:
   MOCK_METHOD0(drainListeners, void());
   MOCK_METHOD0(drainManager, DrainManager&());
   MOCK_METHOD0(accessLogManager, AccessLog::AccessLogManager&());
+  MOCK_METHOD0(auditManager, Audit::AuditManager&());
   MOCK_METHOD1(failHealthcheck, void(bool fail));
   MOCK_METHOD1(exportStatsToChild, void(envoy::HotRestartMessage::Reply::Stats*));
   MOCK_METHOD0(healthCheckFailed, bool());
@@ -384,6 +385,7 @@ public:
   testing::NiceMock<Event::MockDispatcher> dispatcher_;
   testing::NiceMock<MockDrainManager> drain_manager_;
   testing::NiceMock<AccessLog::MockAccessLogManager> access_log_manager_;
+  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   testing::NiceMock<MockHotRestart> hot_restart_;
   testing::NiceMock<MockOptions> options_;
   testing::NiceMock<Runtime::MockRandomGenerator> random_;
