@@ -20,6 +20,7 @@
 #include "common/common/fmt.h"
 #include "common/common/utility.h"
 #include "common/config/cds_json.h"
+#include "common/config/resources.h"
 #include "common/config/utility.h"
 #include "common/grpc/async_client_manager_impl.h"
 #include "common/http/async_client_impl.h"
@@ -445,9 +446,6 @@ void ClusterManagerImpl::applyUpdates(const Cluster& cluster, uint32_t priority,
 bool ClusterManagerImpl::addOrUpdateCluster(const envoy::api::v2::Cluster& cluster,
                                             const std::string& version_info,
                                             ClusterWarmingCallback cluster_warming_cb) {
-  Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
-  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
-
   // First we need to see if this new config is new or an update to an existing dynamic cluster.
   // We don't allow updates to statically configured clusters in the main configuration. We check
   // both the warming clusters and the active clusters to see if we need an update or the update
@@ -516,7 +514,6 @@ bool ClusterManagerImpl::addOrUpdateCluster(const envoy::api::v2::Cluster& clust
   }
 
   updateGauges();
-  cluster_change.complete();
   return true;
 }
 
@@ -542,6 +539,9 @@ void ClusterManagerImpl::createOrUpdateThreadLocalCluster(ClusterData& cluster) 
 }
 
 bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
+  Audit::RemoveResource cluster_change{Config::TypeUrl::get().Cluster, cluster_name};
+  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
+
   bool removed = false;
   auto existing_active_cluster = active_clusters_.find(cluster_name);
   if (existing_active_cluster != active_clusters_.end() &&
@@ -577,6 +577,7 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
     updateGauges();
     // Cancel any pending merged updates.
     updates_map_.erase(cluster_name);
+    cluster_change.complete();
   }
 
   return removed;
