@@ -12,7 +12,7 @@ import "google/protobuf/struct.proto";
 
 // [#protodoc-title: Audit Log File sink]
 
-// Configuration for the built-in *envoy.audit_log_sinks.file*
+// Configuration for the built-in *envoy.audit_sinks.file*
 // :ref:`Audit Sink <envoy_api_msg_config.audit.v2.AuditSink>`
 // that writes log entries directly to a file.
 message AuditLogFile {
