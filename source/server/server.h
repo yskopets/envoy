@@ -214,6 +214,7 @@ private:
   // only after referencing members are gone, since initialization continuation can potentially
   // occur at any point during member lifetime. This init manager is populated with LdsApi targets.
   Init::ManagerImpl init_manager_{"Server"};
+  Audit::AuditManagerImpl audit_manager_;
   // secret_manager_ must come before listener_manager_, config_ and dispatcher_, and destructed
   // only after these members can no longer reference it, since:
   // - There may be active filter chains referencing it in listener_manager_.
@@ -230,7 +231,6 @@ private:
   std::unique_ptr<ServerStats> server_stats_;
   Assert::ActionRegistrationPtr assert_action_registration_;
   ThreadLocal::Instance& thread_local_;
-  Audit::AuditManagerImpl audit_manager_;
   Api::ApiPtr api_;
   Event::DispatcherPtr dispatcher_;
   std::unique_ptr<AdminImpl> admin_;

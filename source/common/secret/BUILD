@@ -15,6 +15,7 @@ envoy_cc_library(
     deps = [
         ":sds_api_lib",
         ":secret_provider_impl_lib",
+        "//include/envoy/audit:auditor_interface",
         "//include/envoy/secret:secret_manager_interface",
         "//include/envoy/server:transport_socket_config_interface",
         "//source/common/common:assert_lib",

@@ -370,6 +370,7 @@ public:
 
   TimeSource& timeSource() override { return time_system_; }
 
+  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   std::unique_ptr<Secret::SecretManager> secret_manager_;
   testing::NiceMock<ThreadLocal::MockInstance> thread_local_;
   Stats::IsolatedStoreImpl stats_store_;
@@ -385,7 +386,6 @@ public:
   testing::NiceMock<Event::MockDispatcher> dispatcher_;
   testing::NiceMock<MockDrainManager> drain_manager_;
   testing::NiceMock<AccessLog::MockAccessLogManager> access_log_manager_;
-  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   testing::NiceMock<MockHotRestart> hot_restart_;
   testing::NiceMock<MockOptions> options_;
   testing::NiceMock<Runtime::MockRandomGenerator> random_;
@@ -491,6 +491,7 @@ public:
   MOCK_METHOD0(threadLocal, ThreadLocal::SlotAllocator&());
   MOCK_METHOD0(api, Api::Api&());
 
+  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   std::unique_ptr<Secret::SecretManager> secret_manager_;
   testing::NiceMock<Api::MockApi> api_;
 };

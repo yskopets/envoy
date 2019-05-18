@@ -153,6 +153,7 @@ private:
   // occur at any point during member lifetime.
   Init::ManagerImpl init_manager_{"Validation server"};
   Init::WatcherImpl init_watcher_{"(no-op)", []() {}};
+  Audit::AuditManagerImpl audit_manager_;
   // secret_manager_ must come before listener_manager_, config_ and dispatcher_, and destructed
   // only after these members can no longer reference it, since:
   // - There may be active filter chains referencing it in listener_manager_.
@@ -162,7 +163,6 @@ private:
   const Options& options_;
   Stats::IsolatedStoreImpl& stats_store_;
   ThreadLocal::InstanceImpl thread_local_;
-  Audit::AuditManagerImpl audit_manager_;
   Api::ApiPtr api_;
   Event::DispatcherPtr dispatcher_;
   Server::ValidationAdmin admin_;
