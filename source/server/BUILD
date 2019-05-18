@@ -261,6 +261,7 @@ envoy_cc_library(
         "//source/common/api:os_sys_calls_lib",
         "//source/common/common:cleanup_lib",
         "//source/common/common:empty_string",
+        "//source/common/config:resources_lib",
         "//source/common/config:utility_lib",
         "//source/common/init:manager_lib",
         "//source/common/network:cidr_range_lib",

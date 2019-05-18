@@ -11,6 +11,7 @@
 #include "common/common/cleanup.h"
 #include "common/common/empty_string.h"
 #include "common/common/fmt.h"
+#include "common/config/resources.h"
 #include "common/config/utility.h"
 #include "common/network/io_socket_handle_impl.h"
 #include "common/network/listen_socket_impl.h"
@@ -733,9 +734,6 @@ ListenerManagerStats ListenerManagerImpl::generateStats(Stats::Scope& scope) {
 
 bool ListenerManagerImpl::addOrUpdateListener(const envoy::api::v2::Listener& config,
                                               const std::string& version_info, bool modifiable) {
-  Audit::AddOrUpdateResource listener_change{config, config.name(), version_info};
-  Cleanup audit([&listener_change, this] { server_.auditManager().observe(listener_change); });
-
   std::string name;
   if (!config.name().empty()) {
     name = config.name();
@@ -744,6 +742,9 @@ bool ListenerManagerImpl::addOrUpdateListener(const envoy::api::v2::Listener& co
   }
   const uint64_t hash = MessageUtil::hash(config);
   ENVOY_LOG(debug, "begin add/update listener: name={} hash={}", name, hash);
+
+  Audit::AddOrUpdateResource listener_change{config, name, version_info};
+  Cleanup audit([&listener_change, this] { server_.api().auditor().observe(listener_change); });
 
   auto existing_active_listener = getListenerByName(active_listeners_, name);
   auto existing_warming_listener = getListenerByName(warming_listeners_, name);
@@ -987,6 +988,9 @@ uint64_t ListenerManagerImpl::numConnections() {
 bool ListenerManagerImpl::removeListener(const std::string& name) {
   ENVOY_LOG(debug, "begin remove listener: name={}", name);
 
+  Audit::RemoveResource listener_change{Config::TypeUrl::get().Listener, name};
+  Cleanup audit([&listener_change, this] { server_.api().auditor().observe(listener_change); });
+
   auto existing_active_listener = getListenerByName(active_listeners_, name);
   auto existing_warming_listener = getListenerByName(warming_listeners_, name);
   if ((existing_warming_listener == warming_listeners_.end() ||
@@ -1011,6 +1015,7 @@ bool ListenerManagerImpl::removeListener(const std::string& name) {
 
   stats_.listener_removed_.inc();
   updateWarmingActiveGauges();
+  listener_change.complete();
   return true;
 }
 
