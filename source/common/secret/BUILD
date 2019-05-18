@@ -41,6 +41,7 @@ envoy_cc_library(
     srcs = ["sds_api.cc"],
     hdrs = ["sds_api.h"],
     deps = [
+        "//include/envoy/audit:auditor_interface",
         "//include/envoy/config:subscription_interface",
         "//include/envoy/event:dispatcher_interface",
         "//include/envoy/init:manager_interface",
