@@ -743,7 +743,7 @@ bool ListenerManagerImpl::addOrUpdateListener(const envoy::api::v2::Listener& co
   const uint64_t hash = MessageUtil::hash(config);
   ENVOY_LOG(debug, "begin add/update listener: name={} hash={}", name, hash);
 
-  Audit::AddOrUpdateResource listener_change{config, name, version_info};
+  Audit::ApplyResource listener_change{config, name, version_info};
   Cleanup audit([&listener_change, this] { server_.api().auditor().observe(listener_change); });
 
   auto existing_active_listener = getListenerByName(active_listeners_, name);
@@ -852,7 +852,7 @@ bool ListenerManagerImpl::addOrUpdateListener(const envoy::api::v2::Listener& co
   }
 
   new_listener_ref.initialize();
-  listener_change.complete();
+  listener_change.accept();
   return true;
 }
 
@@ -1015,7 +1015,7 @@ bool ListenerManagerImpl::removeListener(const std::string& name) {
 
   stats_.listener_removed_.inc();
   updateWarmingActiveGauges();
-  listener_change.complete();
+  listener_change.accept();
   return true;
 }
 

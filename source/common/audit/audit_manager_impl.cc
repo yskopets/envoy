@@ -5,8 +5,8 @@ namespace Audit {
 
 // Audit::Auditor
 void AuditManagerImpl::observe(const ResourceChange& change) {
-  // TODO(yskopets)  
-  if (change.completed()) {
+  // TODO(yskopets)
+  if (change.accepted()) {
     for (const auto& sink : sinks_) {
       sink->log(change);
     }
@@ -14,9 +14,7 @@ void AuditManagerImpl::observe(const ResourceChange& change) {
 }
 
 // Audit::AuditManager
-void AuditManagerImpl::addSink(AuditSinkPtr&& sink) {
-  sinks_.emplace_back(std::move(sink));
-}
+void AuditManagerImpl::addSink(AuditSinkPtr&& sink) { sinks_.emplace_back(std::move(sink)); }
 
 } // namespace Audit
 } // namespace Envoy

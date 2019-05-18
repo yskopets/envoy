@@ -7,11 +7,14 @@
 namespace Envoy {
 namespace Audit {
 
-class ResourceChange {
+class Event {
 public:
-  virtual ~ResourceChange() {}  
-  
-  virtual bool completed() const PURE;
+  virtual ~Event() {}
+};
+
+class ResourceChange : public virtual Event {
+public:
+  virtual bool accepted() const PURE;
   // TODO(yskopets) Enum ???
   virtual const std::string& operation() const PURE;
   virtual const std::string& resourceType() const PURE;

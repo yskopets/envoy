@@ -42,7 +42,7 @@ void SdsApi::onConfigUpdate(const Protobuf::RepeatedPtrField<ProtobufWkt::Any>& 
   auto secret = MessageUtil::anyConvert<envoy::api::v2::auth::Secret>(resources[0]);
   MessageUtil::validate(secret);
 
-  Audit::AddOrUpdateResource secret_change{secret, secret.name(), version_info};
+  Audit::ApplyResource secret_change{secret, secret.name(), version_info};
   Cleanup audit([&secret_change, this] { api_.auditor().observe(secret_change); });
 
   if (secret.name() != sds_config_name_) {
@@ -56,7 +56,7 @@ void SdsApi::onConfigUpdate(const Protobuf::RepeatedPtrField<ProtobufWkt::Any>& 
     secret_hash_ = new_hash;
     setSecret(secret);
     update_callback_manager_.runCallbacks();
-    secret_change.complete();
+    secret_change.accept();
   }
 
   init_target_.ready();

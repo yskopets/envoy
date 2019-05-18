@@ -14,7 +14,7 @@ namespace Secret {
 SecretManagerImpl::SecretManagerImpl(Audit::Auditor& auditor) : auditor_(auditor) {}
 
 void SecretManagerImpl::addStaticSecret(const envoy::api::v2::auth::Secret& secret) {
-  Audit::AddOrUpdateResource secret_change{secret, secret.name(), ""};
+  Audit::ApplyResource secret_change{secret, secret.name(), ""};
   Cleanup audit([&secret_change, this] { auditor_.observe(secret_change); });
 
   switch (secret.type_case()) {
@@ -42,7 +42,7 @@ void SecretManagerImpl::addStaticSecret(const envoy::api::v2::auth::Secret& secr
   default:
     throw EnvoyException("Secret type not implemented");
   }
-  secret_change.complete();
+  secret_change.accept();
 }
 
 TlsCertificateConfigProviderSharedPtr

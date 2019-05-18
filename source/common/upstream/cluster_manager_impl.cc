@@ -577,7 +577,7 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
     updateGauges();
     // Cancel any pending merged updates.
     updates_map_.erase(cluster_name);
-    cluster_change.complete();
+    cluster_change.accept();
   }
 
   return removed;
@@ -586,7 +586,7 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
 void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
                                      const std::string& version_info, bool added_via_api,
                                      ClusterMap& cluster_map) {
-  Audit::AddOrUpdateResource cluster_change{cluster, cluster.name(), version_info};
+  Audit::ApplyResource cluster_change{cluster, cluster.name(), version_info};
   Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
 
   ClusterSharedPtr new_cluster =
@@ -637,7 +637,7 @@ void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
   }
 
   updateGauges();
-  cluster_change.complete();
+  cluster_change.accept();
 }
 
 void ClusterManagerImpl::updateGauges() {
