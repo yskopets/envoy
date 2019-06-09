@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "envoy/audit/auditor.h"
 #include "envoy/event/timer.h"
 #include "envoy/server/drain_manager.h"
 #include "envoy/server/instance.h"
@@ -74,6 +75,7 @@ public:
   void drainListeners() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
   DrainManager& drainManager() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
   AccessLog::AccessLogManager& accessLogManager() override { return access_log_manager_; }
+  Audit::AuditManager& auditManager() override { return audit_manager_; }
   void failHealthcheck(bool) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
   HotRestart& hotRestart() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
   Init::Manager& initManager() override { return init_manager_; }
@@ -151,6 +153,7 @@ private:
   // occur at any point during member lifetime.
   Init::ManagerImpl init_manager_{"Validation server"};
   Init::WatcherImpl init_watcher_{"(no-op)", []() {}};
+  Audit::AuditManagerImpl audit_manager_;
   // secret_manager_ must come before listener_manager_, config_ and dispatcher_, and destructed
   // only after these members can no longer reference it, since:
   // - There may be active filter chains referencing it in listener_manager_.

@@ -15,10 +15,12 @@
 #include "envoy/stats/scope.h"
 
 #include "common/common/assert.h"
+#include "common/common/cleanup.h"
 #include "common/common/enum_to_int.h"
 #include "common/common/fmt.h"
 #include "common/common/utility.h"
 #include "common/config/cds_json.h"
+#include "common/config/resources.h"
 #include "common/config/utility.h"
 #include "common/grpc/async_client_manager_impl.h"
 #include "common/http/async_client_impl.h"
@@ -191,7 +193,7 @@ ClusterManagerImpl::ClusterManagerImpl(
       config_tracker_entry_(
           admin.getConfigTracker().add("clusters", [this] { return dumpClusterConfigs(); })),
       time_source_(main_thread_dispatcher.timeSource()), dispatcher_(main_thread_dispatcher),
-      http_context_(http_context) {
+      api_(api), http_context_(http_context) {
   async_client_manager_ =
       std::make_unique<Grpc::AsyncClientManagerImpl>(*this, tls, time_source_, api);
   const auto& cm_config = bootstrap.cluster_manager();
@@ -537,6 +539,9 @@ void ClusterManagerImpl::createOrUpdateThreadLocalCluster(ClusterData& cluster) 
 }
 
 bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
+  Audit::RemoveResource cluster_change{Config::TypeUrl::get().Cluster, cluster_name};
+  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
+
   bool removed = false;
   auto existing_active_cluster = active_clusters_.find(cluster_name);
   if (existing_active_cluster != active_clusters_.end() &&
@@ -572,6 +577,7 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
     updateGauges();
     // Cancel any pending merged updates.
     updates_map_.erase(cluster_name);
+    cluster_change.accept();
   }
 
   return removed;
@@ -580,6 +586,9 @@ bool ClusterManagerImpl::removeCluster(const std::string& cluster_name) {
 void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
                                      const std::string& version_info, bool added_via_api,
                                      ClusterMap& cluster_map) {
+  Audit::ApplyResource cluster_change{cluster, cluster.name(), version_info};
+  Cleanup audit([&cluster_change, this] { api_.auditor().observe(cluster_change); });
+
   ClusterSharedPtr new_cluster =
       factory_.clusterFromProto(cluster, *this, outlier_event_logger_, added_via_api);
 
@@ -628,6 +637,7 @@ void ClusterManagerImpl::loadCluster(const envoy::api::v2::Cluster& cluster,
   }
 
   updateGauges();
+  cluster_change.accept();
 }
 
 void ClusterManagerImpl::updateGauges() {

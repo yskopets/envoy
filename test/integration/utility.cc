@@ -18,6 +18,7 @@
 #include "common/upstream/upstream_impl.h"
 
 #include "test/common/upstream/utility.h"
+#include "test/mocks/audit/mocks.h"
 #include "test/mocks/stats/mocks.h"
 #include "test/mocks/upstream/mocks.h"
 #include "test/test_common/network_utility.h"
@@ -63,9 +64,10 @@ IntegrationUtil::makeSingleRequest(const Network::Address::InstanceConstSharedPt
                                    const std::string& host, const std::string& content_type) {
 
   NiceMock<Stats::MockIsolatedStatsStore> mock_stats_store;
+  NiceMock<Audit::MockAuditor> mock_auditor;
   Event::GlobalTimeSystem time_system;
   Api::Impl api(Thread::threadFactoryForTest(), mock_stats_store, time_system,
-                Filesystem::fileSystemForTest());
+                Filesystem::fileSystemForTest(), mock_auditor);
   Event::DispatcherPtr dispatcher(api.allocateDispatcher());
   std::shared_ptr<Upstream::MockClusterInfo> cluster{new NiceMock<Upstream::MockClusterInfo>()};
   Upstream::HostDescriptionConstSharedPtr host_description{

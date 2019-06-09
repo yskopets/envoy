@@ -43,7 +43,8 @@ ValidationInstance::ValidationInstance(const Options& options, Event::TimeSystem
                                        Thread::ThreadFactory& thread_factory,
                                        Filesystem::Instance& file_system)
     : options_(options), stats_store_(store),
-      api_(new Api::ValidationImpl(thread_factory, store, time_system, file_system)),
+      api_(
+          new Api::ValidationImpl(thread_factory, store, time_system, file_system, audit_manager_)),
       dispatcher_(api_->allocateDispatcher()),
       singleton_manager_(new Singleton::ManagerImpl(api_->threadFactory().currentThreadId())),
       access_log_manager_(options.fileFlushIntervalMsec(), *api_, *dispatcher_, access_log_lock,
@@ -89,7 +90,7 @@ void ValidationInstance::initialize(const Options& options,
   listener_manager_ = std::make_unique<ListenerManagerImpl>(*this, *this, *this, false);
   thread_local_.registerThread(*dispatcher_, true);
   runtime_loader_ = component_factory.createRuntime(*this, initial_config);
-  secret_manager_ = std::make_unique<Secret::SecretManagerImpl>();
+  secret_manager_ = std::make_unique<Secret::SecretManagerImpl>(audit_manager_);
   ssl_context_manager_ =
       std::make_unique<Extensions::TransportSockets::Tls::ContextManagerImpl>(api_->timeSource());
   cluster_manager_factory_ = std::make_unique<Upstream::ValidationClusterManagerFactory>(

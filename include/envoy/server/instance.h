@@ -6,6 +6,7 @@
 
 #include "envoy/access_log/access_log.h"
 #include "envoy/api/api.h"
+#include "envoy/audit/audit_manager.h"
 #include "envoy/common/mutex_tracer.h"
 #include "envoy/event/timer.h"
 #include "envoy/http/context.h"
@@ -81,6 +82,11 @@ public:
    * @return AccessLogManager for use by the entire server.
    */
   virtual AccessLog::AccessLogManager& accessLogManager() PURE;
+
+  /**
+   * @return AuditManager for use by the entire server.
+   */
+  virtual Audit::AuditManager& auditManager() PURE;
 
   /**
    * Toggle whether the server fails or passes external healthchecks.

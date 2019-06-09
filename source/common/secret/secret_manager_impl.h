@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "envoy/audit/auditor.h"
 #include "envoy/secret/secret_manager.h"
 #include "envoy/secret/secret_provider.h"
 #include "envoy/server/transport_socket_config.h"
@@ -16,6 +17,8 @@ namespace Secret {
 
 class SecretManagerImpl : public SecretManager {
 public:
+  explicit SecretManagerImpl(Audit::Auditor& auditor);
+
   void addStaticSecret(const envoy::api::v2::auth::Secret& secret) override;
 
   TlsCertificateConfigProviderSharedPtr
@@ -79,6 +82,8 @@ private:
 
     std::unordered_map<std::string, std::weak_ptr<SecretType>> dynamic_secret_providers_;
   };
+
+  Audit::Auditor& auditor_;
 
   // Manages pairs of secret name and TlsCertificateConfigProviderSharedPtr.
   std::unordered_map<std::string, TlsCertificateConfigProviderSharedPtr>

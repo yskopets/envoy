@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package envoy.service.audit.v2;
+
+option java_outer_classname = "AuditLogServiceProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.service.audit.v2";
+option go_package = "v2";
+option java_generic_services = true;
+
+import "envoy/api/v2/core/base.proto";
+import "envoy/data/audit/v2/audit_log.proto";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: gRPC Audit Log Service]
+
+// Service for streaming audit logs from Envoy to an audit log server.
+service AuditLogService {
+  // Envoy will connect and send StreamAuditLogsMessage messages forever. It does not expect any
+  // response to be sent as nothing would be done in the case of failure. The server should
+  // disconnect if it expects Envoy to reconnect.
+  rpc StreamAuditLogs(stream StreamAuditLogsMessage) returns (StreamAuditLogsResponse) {
+  }
+}
+
+// Empty response for the StreamAuditLogs API. Will never be sent.
+message StreamAuditLogsResponse {
+}
+
+// Stream message for the StreamAuditLogs API. Envoy will open a stream to the server and stream
+// audit logs without ever expecting a response.
+message StreamAuditLogsMessage {
+  message Identifier {
+    // The node sending the audit log messages over the stream.
+    envoy.api.v2.core.Node node = 1 [(validate.rules).message.required = true];
+
+    // The friendly name of the log configured in :ref:`GrpcAuditLogConfig
+    // <envoy_api_msg_config.auditlog.v2.GrpcAccessLogConfig>`.
+    string log_name = 2 [(validate.rules).string.min_bytes = 1];
+  }
+
+  // Identifier data that will only be sent in the first message on the stream. This is effectively
+  // structured metadata and is a performance optimization.
+  Identifier identifier = 1;
+
+  // Wrapper for batches of audit log entries.
+  message AuditLogEntries {
+    repeated envoy.data.audit.v2.AuditLogEntry log_entry = 1
+        [(validate.rules).repeated .min_items = 1];
+  }
+
+  // Batches of audit log entries.
+  AuditLogEntries log_entries = 2;
+}

@@ -464,6 +464,7 @@ private:
   TimeSource& time_source_;
   ClusterUpdatesMap updates_map_;
   Event::Dispatcher& dispatcher_;
+  Api::Api& api_;
   Http::Context& http_context_;
 };
 

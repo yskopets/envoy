@@ -343,6 +343,7 @@ public:
   MOCK_METHOD0(drainListeners, void());
   MOCK_METHOD0(drainManager, DrainManager&());
   MOCK_METHOD0(accessLogManager, AccessLog::AccessLogManager&());
+  MOCK_METHOD0(auditManager, Audit::AuditManager&());
   MOCK_METHOD1(failHealthcheck, void(bool fail));
   MOCK_METHOD1(exportStatsToChild, void(envoy::HotRestartMessage::Reply::Stats*));
   MOCK_METHOD0(healthCheckFailed, bool());
@@ -369,6 +370,7 @@ public:
 
   TimeSource& timeSource() override { return time_system_; }
 
+  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   std::unique_ptr<Secret::SecretManager> secret_manager_;
   testing::NiceMock<ThreadLocal::MockInstance> thread_local_;
   Stats::IsolatedStoreImpl stats_store_;
@@ -489,6 +491,7 @@ public:
   MOCK_METHOD0(threadLocal, ThreadLocal::SlotAllocator&());
   MOCK_METHOD0(api, Api::Api&());
 
+  testing::NiceMock<Audit::MockAuditManager> audit_manager_;
   std::unique_ptr<Secret::SecretManager> secret_manager_;
   testing::NiceMock<Api::MockApi> api_;
 };

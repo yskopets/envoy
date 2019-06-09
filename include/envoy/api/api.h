@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "envoy/audit/auditor.h"
 #include "envoy/common/time.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/filesystem/filesystem.h"
@@ -47,6 +48,11 @@ public:
    * @return a reference to the TimeSource
    */
   virtual TimeSource& timeSource() PURE;
+
+  /**
+   * @return a reference to the Auditor
+   */
+  virtual Audit::Auditor& auditor() PURE;
 };
 
 typedef std::unique_ptr<Api> ApiPtr;

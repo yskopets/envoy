@@ -16,7 +16,8 @@ namespace Api {
 class ValidationImpl : public Impl {
 public:
   ValidationImpl(Thread::ThreadFactory& thread_factory, Stats::Store& stats_store,
-                 Event::TimeSystem& time_system, Filesystem::Instance& file_system);
+                 Event::TimeSystem& time_system, Filesystem::Instance& file_system,
+                 Audit::Auditor& auditor);
 
   Event::DispatcherPtr allocateDispatcher() override;
   Event::DispatcherPtr allocateDispatcher(Buffer::WatermarkFactoryPtr&& watermark_factory) override;

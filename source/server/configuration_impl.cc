@@ -46,6 +46,9 @@ bool FilterChainUtility::buildFilterChain(
 void MainImpl::initialize(const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
                           Instance& server,
                           Upstream::ClusterManagerFactory& cluster_manager_factory) {
+  // Audit Log must be initialized prior to anything driven by xDS.
+  initializeAuditSinks(bootstrap, server);
+
   const auto& secrets = bootstrap.static_resources().secrets();
   ENVOY_LOG(info, "loading {} static secret(s)", secrets.size());
   for (ssize_t i = 0; i < secrets.size(); i++) {
@@ -111,6 +114,23 @@ void MainImpl::initializeStatsSinks(const envoy::config::bootstrap::v2::Bootstra
         Config::Utility::translateToFactoryConfig(sink_object, factory);
 
     stats_sinks_.emplace_back(factory.createStatsSink(*message, server));
+  }
+}
+
+void MainImpl::initializeAuditSinks(const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
+                                    Instance& server) {
+  ENVOY_LOG(info, "loading audit log sink configuration");
+
+  for (const envoy::config::audit::v2::AuditLog& audit_log : bootstrap.audit_config().audit_logs()) {
+    for (const envoy::config::audit::v2::AuditSink& sink_object : audit_log.sinks()) {
+
+      // Generate factory and translate stats sink custom config
+      auto& factory = Config::Utility::getAndCheckFactory<AuditSinkFactory>(sink_object.name());
+      ProtobufTypes::MessagePtr message =
+          Config::Utility::translateToFactoryConfig(sink_object, factory);
+
+      server.auditManager().addSink(factory.createAuditSink(*message, server));
+    }
   }
 }
 

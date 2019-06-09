@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package envoy.data.audit.v2;
+
+option java_outer_classname = "AuditLogProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.data.audit.v2";
+
+import "envoy/api/v2/core/base.proto";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "gogoproto/gogo.proto";
+import "validate/validate.proto";
+
+option (gogoproto.stable_marshaler_all) = true;
+
+message AuditRecord {
+  
+  // The time that Envoy started audited operation.
+  google.protobuf.Timestamp start_time = 1 [(gogoproto.stdtime) = true];
+
+  // Operation.
+  string operation = 2;
+
+  // Resource.
+  string type_url = 3;
+
+  // Resource name.
+  string resource_name = 4;
+
+  // Resource.
+  string resource = 5;
+
+  // Version.
+  string version = 6;
+}

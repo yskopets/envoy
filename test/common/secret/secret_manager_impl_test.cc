@@ -8,6 +8,7 @@
 #include "common/ssl/certificate_validation_context_config_impl.h"
 #include "common/ssl/tls_certificate_config_impl.h"
 
+#include "test/mocks/audit/mocks.h"
 #include "test/mocks/server/mocks.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/utility.h"
@@ -26,6 +27,7 @@ class SecretManagerImplTest : public testing::Test {
 protected:
   SecretManagerImplTest() : api_(Api::createApiForTest()) {}
 
+  testing::NiceMock<Audit::MockAuditor> auditor_;
   Api::ApiPtr api_;
 };
 
@@ -42,7 +44,7 @@ tls_certificate:
     filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/selfsigned_key.pem"
 )EOF";
   MessageUtil::loadFromYaml(TestEnvironment::substitute(yaml), secret_config);
-  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl());
+  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl(auditor_));
   secret_manager->addStaticSecret(secret_config);
 
   ASSERT_EQ(secret_manager->findStaticTlsCertificateProvider("undefined"), nullptr);
@@ -75,7 +77,7 @@ TEST_F(SecretManagerImplTest, DuplicateStaticTlsCertificateSecret) {
         filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/selfsigned_key.pem"
     )EOF";
   MessageUtil::loadFromYaml(TestEnvironment::substitute(yaml), secret_config);
-  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl());
+  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl(auditor_));
   secret_manager->addStaticSecret(secret_config);
 
   ASSERT_NE(secret_manager->findStaticTlsCertificateProvider("abc.com"), nullptr);
@@ -94,7 +96,7 @@ TEST_F(SecretManagerImplTest, CertificateValidationContextSecretLoadSuccess) {
         allow_expired_certificate: true
       )EOF";
   MessageUtil::loadFromYaml(TestEnvironment::substitute(yaml), secret_config);
-  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl());
+  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl(auditor_));
   secret_manager->addStaticSecret(secret_config);
 
   ASSERT_EQ(secret_manager->findStaticCertificateValidationContextProvider("undefined"), nullptr);
@@ -119,7 +121,7 @@ TEST_F(SecretManagerImplTest, DuplicateStaticCertificateValidationContextSecret)
       allow_expired_certificate: true
     )EOF";
   MessageUtil::loadFromYaml(TestEnvironment::substitute(yaml), secret_config);
-  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl());
+  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl(auditor_));
   secret_manager->addStaticSecret(secret_config);
 
   ASSERT_NE(secret_manager->findStaticCertificateValidationContextProvider("abc.com"), nullptr);
@@ -142,7 +144,7 @@ session_ticket_keys:
 
   MessageUtil::loadFromYaml(TestEnvironment::substitute(yaml), secret_config);
 
-  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl());
+  std::unique_ptr<SecretManager> secret_manager(new SecretManagerImpl(auditor_));
 
   EXPECT_THROW_WITH_MESSAGE(secret_manager->addStaticSecret(secret_config), EnvoyException,
                             "Secret type not implemented");
@@ -150,7 +152,7 @@ session_ticket_keys:
 
 TEST_F(SecretManagerImplTest, SdsDynamicSecretUpdateSuccess) {
   Server::MockInstance server;
-  std::unique_ptr<SecretManager> secret_manager(std::make_unique<SecretManagerImpl>());
+  std::unique_ptr<SecretManager> secret_manager(std::make_unique<SecretManagerImpl>(auditor_));
 
   NiceMock<Server::Configuration::MockTransportSocketFactoryContext> secret_context;
 

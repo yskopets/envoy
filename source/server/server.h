@@ -17,6 +17,7 @@
 #include "envoy/tracing/http_tracer.h"
 
 #include "common/access_log/access_log_manager_impl.h"
+#include "common/audit/audit_manager_impl.h"
 #include "common/common/assert.h"
 #include "common/common/logger_delegates.h"
 #include "common/grpc/async_client_manager_impl.h"
@@ -165,6 +166,7 @@ public:
   void drainListeners() override;
   DrainManager& drainManager() override { return *drain_manager_; }
   AccessLog::AccessLogManager& accessLogManager() override { return access_log_manager_; }
+  Audit::AuditManager& auditManager() override { return audit_manager_; }
   void failHealthcheck(bool fail) override;
   HotRestart& hotRestart() override { return restarter_; }
   Init::Manager& initManager() override { return init_manager_; }
@@ -212,6 +214,7 @@ private:
   // only after referencing members are gone, since initialization continuation can potentially
   // occur at any point during member lifetime. This init manager is populated with LdsApi targets.
   Init::ManagerImpl init_manager_{"Server"};
+  Audit::AuditManagerImpl audit_manager_;
   // secret_manager_ must come before listener_manager_, config_ and dispatcher_, and destructed
   // only after these members can no longer reference it, since:
   // - There may be active filter chains referencing it in listener_manager_.

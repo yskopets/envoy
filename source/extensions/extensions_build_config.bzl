@@ -8,6 +8,12 @@ EXTENSIONS = {
     "envoy.access_loggers.http_grpc":                   "//source/extensions/access_loggers/http_grpc:config",
 
     #
+    # Audit sinks
+    #
+
+    "envoy.audit_sinks.file":                           "//source/extensions/audit_sinks/file:config",
+
+    #
     # Clusters
     #
     "envoy.clusters.redis":                             "//source/extensions/clusters/redis:redis_cluster",
@@ -141,6 +147,12 @@ WINDOWS_EXTENSIONS = {
 
     "envoy.access_loggers.file":                        "//source/extensions/access_loggers/file:config",
     #"envoy.access_loggers.http_grpc":                   "//source/extensions/access_loggers/http_grpc:config",
+
+    #
+    # Audit sinks
+    #
+
+    #"envoy.audit_sinks.file":                           "//source/extensions/audit_sinks/file:config",
 
     #
     # gRPC Credentials Plugins

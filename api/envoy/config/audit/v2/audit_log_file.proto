@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package envoy.config.audit.v2;
+
+option java_outer_classname = "FileProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.audit.v2";
+option go_package = "v2";
+
+import "validate/validate.proto";
+import "google/protobuf/struct.proto";
+
+// [#protodoc-title: Audit Log File sink]
+
+// Configuration for the built-in *envoy.audit_sinks.file*
+// :ref:`Audit Sink <envoy_api_msg_config.audit.v2.AuditSink>`
+// that writes log entries directly to a file.
+message AuditLogFile {
+  // A path to a local file to which to write the audit log entries.
+  string path = 1 [(validate.rules).string.min_bytes = 1];
+
+  enum Format {
+    // Compact JSON
+    JSON = 0;
+    YAML = 1;
+  }
+
+  // Audit log format.
+  Format format = 2;
+}

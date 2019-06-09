@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "envoy/api/v2/auth/cert.pb.validate.h"
+#include "envoy/audit/auditor.h"
 
 #include "common/config/resources.h"
 #include "common/config/subscription_factory.h"
@@ -30,7 +31,7 @@ SdsApi::SdsApi(const LocalInfo::LocalInfo& local_info, Event::Dispatcher& dispat
 }
 
 void SdsApi::onConfigUpdate(const Protobuf::RepeatedPtrField<ProtobufWkt::Any>& resources,
-                            const std::string&) {
+                            const std::string& version_info) {
   if (resources.empty()) {
     throw EnvoyException(
         fmt::format("Missing SDS resources for {} in onConfigUpdate()", sds_config_name_));
@@ -40,6 +41,9 @@ void SdsApi::onConfigUpdate(const Protobuf::RepeatedPtrField<ProtobufWkt::Any>& 
   }
   auto secret = MessageUtil::anyConvert<envoy::api::v2::auth::Secret>(resources[0]);
   MessageUtil::validate(secret);
+
+  Audit::ApplyResource secret_change{secret, secret.name(), version_info};
+  Cleanup audit([&secret_change, this] { api_.auditor().observe(secret_change); });
 
   if (secret.name() != sds_config_name_) {
     throw EnvoyException(
@@ -52,6 +56,7 @@ void SdsApi::onConfigUpdate(const Protobuf::RepeatedPtrField<ProtobufWkt::Any>& 
     secret_hash_ = new_hash;
     setSecret(secret);
     update_callback_manager_.runCallbacks();
+    secret_change.accept();
   }
 
   init_target_.ready();
