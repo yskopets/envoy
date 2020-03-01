@@ -44,7 +44,6 @@ envoy_cc_library(
     deps = [
         "//include/envoy/http:context_interface",
         "//include/envoy/ratelimit:ratelimit_interface",
-        "//include/envoy/tracing:http_tracer_interface",
         "//include/envoy/upstream:cluster_manager_interface",
         "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",
     ],

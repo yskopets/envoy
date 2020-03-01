@@ -9,7 +9,6 @@
 
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/stats/sink.h"
-#include "envoy/tracing/http_tracer.h"
 #include "envoy/upstream/cluster_manager.h"
 
 #include "absl/types/optional.h"
@@ -32,9 +31,14 @@ public:
   virtual Upstream::ClusterManager* clusterManager() PURE;
 
   /**
-   * @return Tracing::HttpTracer& singleton for use by the entire server.
+   * Get the default tracing configuration, i.e. one from the bootstrap config.
+   *
+   * Once deprecation window for the tracer provider configuration in the bootstrap config is over,
+   * this method will no longer be necessary.
+   *
+   * @return Tracing.
    */
-  virtual Tracing::HttpTracer& httpTracer() PURE;
+  virtual const envoy::config::trace::v3::Tracing& defaultTracingConfig() PURE;
 
   /**
    * @return std::list<Stats::SinkPtr>& the list of stats sinks initialized from the configuration.

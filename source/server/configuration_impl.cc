@@ -21,9 +21,6 @@
 #include "common/config/utility.h"
 #include "common/network/socket_option_factory.h"
 #include "common/protobuf/utility.h"
-#include "common/runtime/runtime_impl.h"
-#include "common/tracing/http_tracer_config_impl.h"
-#include "common/tracing/http_tracer_impl.h"
 
 namespace Envoy {
 namespace Server {
@@ -97,22 +94,24 @@ void MainImpl::initializeTracers(const envoy::config::trace::v3::Tracing& config
                                  Instance& server) {
   ENVOY_LOG(info, "loading tracing configuration");
 
+  default_tracing_config_ = configuration;
+
   if (!configuration.has_http()) {
-    http_tracer_ = std::make_unique<Tracing::HttpNullTracer>();
     return;
   }
 
-  // Initialize tracing driver.
-  ENVOY_LOG(info, "  loading tracing driver: {}", configuration.http().name());
+  // Validating tracing configuration (minimally).
+  ENVOY_LOG(info, "  validating tracing driver: {}", configuration.http().name());
 
   // Now see if there is a factory that will accept the config.
   auto& factory = Config::Utility::getAndCheckFactory<TracerFactory>(configuration.http());
   ProtobufTypes::MessagePtr message = Config::Utility::translateToFactoryConfig(
       configuration.http(), server.messageValidationContext().staticValidationVisitor(), factory);
 
-  Tracing::TracerFactoryContextImpl factory_context(
-      server.serverFactoryContext(), server.messageValidationContext().staticValidationVisitor());
-  http_tracer_ = factory.createHttpTracer(*message, factory_context);
+  // notice that the actual HttpTracer instance will be created on demand
+  // in the context of envoy.http_connection_manager filter.
+  // the side effect of it that tracer-specific configuration
+  // is no longer validated at this point.
 }
 
 void MainImpl::initializeStatsSinks(const envoy::config::bootstrap::v3::Bootstrap& bootstrap,

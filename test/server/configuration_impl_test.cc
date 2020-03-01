@@ -195,7 +195,7 @@ TEST_F(ConfigurationImplTest, NullTracerSetWhenTracingConfigurationAbsent) {
   MainImpl config;
   config.initialize(bootstrap, server_, cluster_manager_factory_);
 
-  EXPECT_NE(nullptr, dynamic_cast<Tracing::HttpNullTracer*>(&config.httpTracer()));
+  EXPECT_TRUE(TestUtility::protoEqual(envoy::config::trace::v3::Tracing{}, config.defaultTracingConfig()));
 }
 
 TEST_F(ConfigurationImplTest, NullTracerSetWhenHttpKeyAbsentFromTracerConfiguration) {
@@ -234,7 +234,7 @@ TEST_F(ConfigurationImplTest, NullTracerSetWhenHttpKeyAbsentFromTracerConfigurat
   MainImpl config;
   config.initialize(bootstrap, server_, cluster_manager_factory_);
 
-  EXPECT_NE(nullptr, dynamic_cast<Tracing::HttpNullTracer*>(&config.httpTracer()));
+  EXPECT_TRUE(TestUtility::protoEqual(envoy::config::trace::v3::Tracing{}, config.defaultTracingConfig()));
 }
 
 TEST_F(ConfigurationImplTest, ConfigurationFailsWhenInvalidTracerSpecified) {

@@ -229,9 +229,6 @@ protected:
     EXPECT_EQ(BUILD_VERSION_NUMBER, version_string);
   }
 
-  // Returns the server's tracer as a pointer, for use in dynamic_cast tests.
-  Tracing::HttpTracer* tracer() { return &server_->httpContext().tracer(); };
-
   Network::Address::IpVersion version_;
   testing::NiceMock<MockOptions> options_;
   DefaultListenerHooks hooks_;
