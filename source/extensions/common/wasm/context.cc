@@ -1070,14 +1070,14 @@ WasmResult Context::setProperty(absl::string_view path, absl::string_view value)
     state = &stream_info->filterState()->getDataMutable<WasmState>(key);
   } else {
     const auto& it = rootContext()->state_prototypes_.find(path);
-    const WasmStatePrototype& prototype = it == rootContext()->state_prototypes_.end()
-                                              ? DefaultWasmStatePrototype::get()
-                                              : *it->second.get();
+    WasmStatePrototypeConstSharedPtr prototype = it == rootContext()->state_prototypes_.end()
+                                              ? std::shared_ptr<const WasmStatePrototype>(&DefaultWasmStatePrototype::get(), [](const WasmStatePrototype*){})
+                                              : it->second;
     auto state_ptr = std::make_unique<WasmState>(prototype);
     state = state_ptr.get();
     stream_info->filterState()->setData(key, std::move(state_ptr),
                                         StreamInfo::FilterState::StateType::Mutable,
-                                        prototype.life_span_);
+                                        prototype->life_span_);
   }
   if (!state->setValue(value)) {
     return WasmResult::BadArgument;

@@ -10,7 +10,7 @@ namespace Wasm {
 
 google::api::expr::runtime::CelValue WasmState::exprValue(Protobuf::Arena* arena) const {
   if (initialized_) {
-    switch (type_) {
+    switch (proto_->type_) {
     case WasmType::String:
       return google::api::expr::runtime::CelValue::CreateString(&value_);
     case WasmType::Bytes:
@@ -20,7 +20,7 @@ google::api::expr::runtime::CelValue WasmState::exprValue(Protobuf::Arena* arena
       return google::api::expr::runtime::CelValue::CreateMap(
           google::api::expr::runtime::CreateFlatBuffersBackedObject(
               reinterpret_cast<const uint8_t*>(value_.data()),
-              *reflection::GetSchema(schema_.data()), arena));
+              *reflection::GetSchema(proto_->schema_.data()), arena));
     }
   }
   return google::api::expr::runtime::CelValue::CreateNull();
@@ -29,13 +29,13 @@ google::api::expr::runtime::CelValue WasmState::exprValue(Protobuf::Arena* arena
 ProtobufTypes::MessagePtr WasmState::serializeAsProto() const {
   auto any = std::make_unique<ProtobufWkt::Any>();
 
-  if (type_ != WasmType::Protobuf) {
+  if (proto_->type_ != WasmType::Protobuf) {
     ProtobufWkt::BytesValue value;
     value.set_value(value_);
     any->PackFrom(value);
   } else {
     // The WASM extension serialized in its own type.
-    any->set_type_url(std::string(schema_));
+    any->set_type_url(std::string(proto_->schema_));
     any->set_value(value_);
   }
 

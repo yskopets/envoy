@@ -48,18 +48,20 @@ public:
   const StreamInfo::FilterState::LifeSpan life_span_;
 };
 
+using WasmStatePrototypeConstSharedPtr = std::shared_ptr<const WasmStatePrototype>;
+
 using DefaultWasmStatePrototype = ConstSingleton<WasmStatePrototype>;
 
 // A simple wrapper around generic values
 class WasmState : public StreamInfo::FilterState::Object {
 public:
-  explicit WasmState(const WasmStatePrototype& proto)
-      : readonly_(proto.readonly_), type_(proto.type_), schema_(proto.schema_) {}
+  explicit WasmState(WasmStatePrototypeConstSharedPtr proto)
+      : proto_(proto) {}
 
   const std::string& value() const { return value_; }
   google::api::expr::runtime::CelValue exprValue(Protobuf::Arena* arena) const;
   bool setValue(absl::string_view value) {
-    if (initialized_ && readonly_) {
+    if (initialized_ && proto_->readonly_) {
       return false;
     }
     value_.assign(value.data(), value.size());
@@ -70,9 +72,7 @@ public:
   ProtobufTypes::MessagePtr serializeAsProto() const override;
 
 private:
-  const bool readonly_;
-  const WasmType type_;
-  absl::string_view schema_;
+  const WasmStatePrototypeConstSharedPtr proto_;
   std::string value_{};
   bool initialized_{false};
 };

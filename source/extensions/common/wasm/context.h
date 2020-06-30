@@ -516,7 +516,7 @@ protected:
   bool tcp_connection_closed_ = false;
 
   // Filter state prototype declaration.
-  absl::flat_hash_map<std::string, std::unique_ptr<const WasmStatePrototype>> state_prototypes_;
+  absl::flat_hash_map<std::string, WasmStatePrototypeConstSharedPtr> state_prototypes_;
 };
 
 using ContextSharedPtr = std::shared_ptr<Context>;
